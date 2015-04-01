@@ -1,0 +1,59 @@
+Caros amigos da Programação Funcional,
+ 
+segue uma lista de exercícios. Vocês podem me entregar (via email ou pessoalmente) as soluções (de pelo menos algumas das questões) até a próxima aula. Qualquer dúvida, podem entrar em contato via email.
+ 
+prof. Steffen
+ 
+1. Relembre que o produto escalar de dois vetores (a_1,...,a_n) e (b_1,...,b_n) de integers é dado pela soma a_1*b_1+...+a_n*b_n. Apresente uma função
+vectProd :: [Int] -> [Int] -> Int
+que calcula este produto. Caso que as duas listas não sejam do mesmo comprimento, a função deve retornar uma mensagem de erro.
+2. Defina uma função "ultimo" usando o operador (!!) e a função prédefinida length. A função ultimo deve ter o mesmo comportamento como a função prédefinida last apresentada em aula.
+3. Qual é o tipo da função compose definida como segue? compose f g x = f (g x)
+Você pode definir uma função diretamente na Prelude usando a palavra chave let sem a necessidade de criar um arquivo hs. Por ex.,
+let compose f g x = f (g x)
+Relembre que Haskell deriva o tipo automaticamente e você pode chamar essa informação fazendo
+:t compose 
+na Prelude. Explique o tipo da função compose e o que ela está fazendo.
+4. Defina uma função que calcula o valor médio (isto é, a média) de uma lista de integers. A maneira mais óbvia de calcular este valor consiste em somar os números da lista e dividir o resultado pelo comprimento da lista (usando as operações (/) e length). Ainda tem que se preocupar com os tipos desta operação, pois a função length retorna um valor do tipo Int, enquanto a soma dos elementos provavelmente é do tipo Num. Então tem que fazer uma conversão de tipos: fromIntegral (length xs), onde xs é a lista em questão. Isto transforma o valor Int para um valor do tipo mais geral Num. Não fazendo isso, o compilador não vai querer dividir um Num por um Int. Vocês podem se informar sobre este fromIntegral nos livros Learn You a Haskell ..., e A Gentle Introduction to Haskell, os dois disponíveis online.
+5. Relembre o que foi dito em sala de aula sobre o currying em Haskell. Considere as seguintes funções prédefinidas curry e uncurry:
+curry f x y = f (x, y)
+uncurry f p = f (fst p) (snd p)
+Chame os tipos de curry e uncurry na Prelude usando :t (ou :type). O que estas funções estão fazendo? Como exemplo, defina as funções
+f a b = a + b
+g (a,b) = a + b
+e note que
+f = curry g
+g = uncurry f
+Obviamente, as duas funções são equivalentes: f x z = g (x,y). Por exemplo, a evaluação da expressão (f 3 4) == (curry g 3 4) é o valor True.
+Explique por que as evaluações das expressões 
+uncurry (+) (3,4)
+curry g 3 4
+(+) 3 4
+3 + 4
+sempre são o número 7.
+6. Considere a função double x = 2*x
+Quais sao os valores de 
+map double [1,4,4,3]
+map (double . double) [1,4,4,3]
+map double []
+Note que em Haskell double 3+4 significa (double 3)+4, porque aplicacao de uma funcao tem prioridade sobre qualquer operador.
+7. Defina uma funcao
+elementAt :: Int -> [a] -> [a]
+que retorna o n-esimo elemento de uma lista (comecando a contar com 0).
+8. O que faz a funcao seguinte?
+inicial [] _ = True
+inicial (x:xs) [] = False
+inicial (x:xs) (y:ys) = (x == y) && inicial xs ys
+9. Relembre que na ultima aula definimos as funcoes seguintes:
+listSoma = foldr (+) 0 
+listProduto = foldr (*) 1
+append xs ys = foldr (:) ys xs
+concat' = foldr append []
+map' f = foldr (\x ys -> (f x):ys) []
+As ultimas tres funcoes sao predefinidas em Haskell: (++), concat e map, respectivamente. Teste essas funcoes e tente entender como elas funcionam.
+10. Por incrivel que pareca, a funcao seguinte retorna a lista INFINITA de todos os numeros primos (limitada apenas pelos recursos do computador utilizado):
+ 
+numerosPrimos = coador [2 .. ]
+     where coador (x:xs) = x:coador [n | n <- xs, mod n x > 0]
+ 
+Explique como essa funcao funciona!
