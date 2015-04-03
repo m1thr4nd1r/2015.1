@@ -2,6 +2,8 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
+// Filtro 3x3
+
 int main(int argc, char** argv)
 {
 	IplImage *img, *img2, *img3;

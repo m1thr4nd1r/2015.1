@@ -2,7 +2,7 @@
 
 CC = gcc
 
-CFLAGS = -lm `pkg-config --cflags --libs opencv`
+CFLAGS = -lm -g `pkg-config --cflags --libs opencv`
 
 PROG = PI
 
