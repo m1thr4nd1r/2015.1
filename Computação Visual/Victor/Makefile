@@ -1,13 +1,14 @@
 #MAKEFILE
 
 CC = gcc
+CPP = g++
 
-CFLAGS = -lm -g `pkg-config --cflags --libs opencv`
+CFLAGS = -lm `pkg-config --cflags --libs opencv`
 
-PROG = PI
+PROG = a.out
 
 all: $(OBJ)
-		$(CC) ${SRC} $(CFLAGS) $(LDFLAGS) -o $(PROG) -g
+		$(CPP) ${SRC} $(CFLAGS) $(LDFLAGS) -o $(PROG) -g
 
 clean:
 		rm -f *.o *~ core $(PROG)
