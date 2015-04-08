@@ -1,9 +1,16 @@
+-- Created by Marcos Silva
+
 module Main where
 
 vectProd :: [Int] -> [Int] -> Int
 vectProd [] [] = 0
 vectProd (x:xs) (y:ys) 
 	| length xs == length ys = x * y + (vectProd xs ys)
+	| otherwise = error "length not equals."
+
+vectProd' :: [Int] -> [Int] -> Int
+vectProd' xs ys
+	| length xs == length ys = sum ( zipWith (*) xs ys)
 	| otherwise = error "length not equals."
 
 ultimo' :: [a] -> a
@@ -113,4 +120,4 @@ main = do
 	putStrLn "10. Primos infinito"
 	putStrLn "coador [2 .. ] => retorna uma lista de tamanho infinito iniciando em 2."
 	putStrLn "x:coador [n | n <- xs, mod n x > 0] => x eh o topo da lista, tal que n seja um elemento da lista e o mod x de n seja maior que zero."
-	print (numerosPrimos)
+	-- print (numerosPrimos)
