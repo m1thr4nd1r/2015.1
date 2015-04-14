@@ -1,5 +1,6 @@
 module Main where
 
+funRainhas :: [Int]
 funRainhas = map length (map nRainhas [1..])
 
 nRainhas :: Int -> [[(Int,Int)]]
