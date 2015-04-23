@@ -6,6 +6,8 @@
 using namespace cv;
 using namespace std;
 
+#define sqr(a) (a)*(a)
+
 // -----------------Codigo de Java-----------------
 
 void copy(IplImage * src, IplImage * dst, int step, char flag){
@@ -51,15 +53,99 @@ void showWindow(string name, IplImage* img)
 	cvShowImage(name.c_str(), img);
 }
 
-void kmeans(IplImage *img, IplImage *means, int n)
+IplImage* kmeansColor(IplImage *img, int n, bool hide)
+{
+	int k[n][3],minimo, minIndex, sumK[n][3], *qntK, step = 0;
+	bool change = false;
+	IplImage * show = cvCreateImage(cvSize(img->width, img->height),IPL_DEPTH_8U,3);	
+	IplImage * means = cvCreateImage(cvSize(img->width, img->height),IPL_DEPTH_32S,1);
+        
+	for (int i = 0; i < n; i++)
+	{
+		// k[i] = 127.5 * i;
+		// double temp = 255 * (i/n);
+		k[i][0] = k[i][1] = k[i][2] = 127.5 * i;
+		cout << "(" << k[i][0] << " " << k[i][1] << " " << k[i][2] << ") ";
+	}
+	
+	do
+	{
+		qntK = (int*) calloc(n,sizeof(int));
+		for (int i = 0; i < n; i++)
+			sumK[i][0] = sumK[i][1] = sumK[i][2] = 0;
+			
+		step++;
+		change = false;
+		for (int i = 0; i < img->height; i++)
+			for (int j = 0; j < img->width; j++)
+			{
+				minIndex = -1;
+				minimo = INT_MAX;
+				for (int l = 0; l < n; l++)
+				{
+					int temp = sqrt(sqr(CV_IMAGE_ELEM(img, uchar, i, j*3) - k[l][0]) + 
+							   		sqr(CV_IMAGE_ELEM(img, uchar, i, j*3+1) - k[l][1]) +
+							   		sqr(CV_IMAGE_ELEM(img, uchar, i, j*3+2) - k[l][2]));
+					if (temp < minimo)
+					{	
+						minIndex = l;
+						minimo = temp;
+					}
+				}
+
+				sumK[minIndex][0] += CV_IMAGE_ELEM(img,uchar,i,j*3);
+				sumK[minIndex][1] += CV_IMAGE_ELEM(img,uchar,i,j*3+1);
+				sumK[minIndex][2] += CV_IMAGE_ELEM(img,uchar,i,j*3+2);
+				qntK[minIndex]++;
+
+				if (CV_IMAGE_ELEM(means, int, i, j) != minIndex)
+				{
+					change = true;
+					CV_IMAGE_ELEM(means, int, i, j) = minIndex;
+				}
+			}
+
+		for (int l = 0; l < n; l++)
+			for (int j = 0; j < 3; j++)
+			{
+				double temp = (double) sumK[l][j] / qntK[l]; 
+				k[l][j] = (int) temp;
+			}
+		
+		cout << "Step: " << step << endl;
+		for (int i = 0; i < means->height; i++) 
+			for (int j = 0; j < means->width; j++)
+			{				
+				CV_IMAGE_ELEM(show, uchar, i, j*3) = k[CV_IMAGE_ELEM(means,int,i,j)][0];
+				CV_IMAGE_ELEM(show, uchar, i, j*3+1) = k[CV_IMAGE_ELEM(means,int,i,j)][1];
+				CV_IMAGE_ELEM(show, uchar, i, j*3+2) = k[CV_IMAGE_ELEM(means,int,i,j)][2];
+			}
+
+		while(!hide && cvWaitKey(10) < 0)
+			showWindow("KMeansColor - Step", show);
+		
+	}while(change);
+
+	destroyAllWindows();
+	return show;
+}
+
+IplImage* kmeans(IplImage *img, int n, bool hide)
 {
 	int k[n],minimo, minIndex, *sumK, *qntK, step = 0;
 	bool change = false;
 	IplImage * show = cvCreateImage(cvSize(img->width, img->height),IPL_DEPTH_8U,1);	
-
+	IplImage * means = cvCreateImage(cvSize(img->width, img->height),IPL_DEPTH_32S,1);
+        
 	for (int i = 0; i < n; i++)
+	{
 		k[i] = 127.5 * i;
-	
+		cout << k[i] << " ";
+		//double temp = 255 * (i/n);
+		//k[i] = (int) temp;
+	}
+	cout << endl;
+
 	do
 	{
 		sumK = (int*) calloc(n,sizeof(int));
@@ -77,12 +163,10 @@ void kmeans(IplImage *img, IplImage *means, int n)
 					int temp = CV_IMAGE_ELEM(img, uchar, i, j) - k[l];
 					temp *= temp;
 					int t = CV_IMAGE_ELEM(img, uchar, i, j);
-					//cout << "t: " << t << " | l: " << k[l] << " | Temp: " << temp << endl;
 					if (temp < minimo)
 					{	
 						minIndex = l;
 						minimo = temp;
-						//cout << minIndex << " " << minimo << endl;
 					}
 				}
 				sumK[minIndex] += CV_IMAGE_ELEM(img,uchar,i,j);
@@ -99,44 +183,44 @@ void kmeans(IplImage *img, IplImage *means, int n)
 			double temp = (double) sumK[l] / qntK[l]; 
 			k[l] = (int) temp;
 		}
-
+		
 		cout << "Step: " << step << endl;
-		while(cvWaitKey(10) < 0)
-		{
-			for (int i = 0; i < means->height; i++) 
-				for (int j = 0; j < means->width; j++)				
-					CV_IMAGE_ELEM(show, uchar, i, j) = CV_IMAGE_ELEM(means,int,i,j);
+		for (int i = 0; i < means->height; i++) 
+			for (int j = 0; j < means->width; j++)				
+				CV_IMAGE_ELEM(show, uchar, i, j) = CV_IMAGE_ELEM(means,int,i,j);
+		
+		while(!hide && cvWaitKey(10) < 0)
 			showWindow("KMeans - Step", show);
-		}
+		
 	}while(change);
+
+	destroyAllWindows();
+	return show;
 }
 
 int main(int argc, char ** argv)
 {
 	IplImage * img = NULL;     //aloca
-    if(argc > 1 && (img  = cvLoadImage(argv[1],0)) != 0)
+    if(argc > 3 && (img  = cvLoadImage(argv[2],1)) != 0)
+    // if(argc > 1 && (img  = cvLoadImage(argv[1],0)) != 0)
     {
-        IplImage * intmeans = cvCreateImage(cvSize(img->width, img->height),IPL_DEPTH_32S,1);
-        IplImage * means = cvCreateImage(cvSize(img->width, img->height),IPL_DEPTH_8U,1);
+    	bool hide = (argv[3][0] == 'f' || argv[3][0] == 'F')? true : false;
+    	cout << "Centros: " << atoi(argv[1]) << " | Hide? " << hide << endl;
+    	IplImage * meansColor = kmeansColor(img,atoi(argv[1]),hide);
+        img = cvLoadImage(argv[2],0);
+        IplImage * means = kmeans(img,atoi(argv[1]),hide);
+        // IplImage * res = join('h',10,img,2,means,meansColor);
         
-        kmeans(img,intmeans,3);
-
-        // for (int i = 0; i < means->height; i++) 
-		// {
-		// 	for (int j = 0; j < means->width; j++)				
-		// 	{
-		// 		cout << (int) CV_IMAGE_ELEM(intmeans,int,i,j) << " ";
-		// 		CV_IMAGE_ELEM(means, uchar, i, j) = CV_IMAGE_ELEM(intmeans,int,i,j);
-		// 	}
-		// 	cout << endl;
-		// }
-
-        // IplImage * res = join('h',10,img,1,means);
-        // showWindow("Img / KMeans", res);         
-        // cvWaitKey(0); 
-        // destroyWindow("Img / KMeans");
+        while (cvWaitKey(5) < 0)
+        {
+	        showWindow("Img", img);
+	     	showWindow("KMeans", means);
+	        showWindow("KMeansColor", meansColor);
+        }
+        destroyAllWindows();
         cvReleaseImage(&img);
         cvReleaseImage(&means);
-        cvReleaseImage(&intmeans);        
+        cvReleaseImage(&meansColor);
+        // cvReleaseImage(&res);
     }
 }
