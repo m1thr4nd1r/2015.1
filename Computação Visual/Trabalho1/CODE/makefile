@@ -9,7 +9,7 @@ SRC = stereo.cpp
 OUT = a.out
 
 all: $(OBJ)
-	$(CPP) $(SRC) $(CFLAGS) -o $(OUT) -g
+	$(CPP) $(SRC) -g -w -Werror $(CFLAGS) -o $(OUT)
 
 clen:
 	rm -f *.o *- core $(PROG)

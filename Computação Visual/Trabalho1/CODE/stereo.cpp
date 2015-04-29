@@ -1,14 +1,13 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
-#include <sstream>
+#include <cstdio>
 
 #define FILL_IPL(img, uchar, x) for (int i = 0; i < img->height; ++i) for (int j = 0; j < img->width; ++j) CV_IMAGE_ELEM(img, uchar, i, j) = x
 #define PRINT_IPL(img, uchar) for (int i = 0; i < img->height; ++i){ for (int j = 0; j < img->width; ++j){ cout << CV_IMAGE_ELEM(img, uchar, i, j) - '\0' << " "; } cout << endl; }
 
 #define min(a, b) (a > b) ? b : a
 #define max(a, b) (a > b) ? a : b
-
 
 using namespace std;
 
@@ -20,7 +19,8 @@ typedef long long ll;
 IplImage *esq, *dir, *disp, *res, *erro;
 ll ** C, m, n;
 
-int pass, maior = 0;
+int pass, maior = 31;
+int bits = 8;
 
 ll sqr(ll a){ 
 	return (a) * (a); 
@@ -68,7 +68,7 @@ double average(int mh, int mv, ll (*f)(ll)){
 	for(i=0; i < esq->height; i++) {
 		for(j=0; j < esq->width; j++) {
 			d = getMatching(i, j, mh, mv, maior, f);
-			CV_IMAGE_ELEM(res,uchar,i,j) = d * 8; //NAO MUDAR
+			CV_IMAGE_ELEM(res,uchar,i,j) = d * bits; //NAO MUDAR
 			if(CV_IMAGE_ELEM(disp,uchar,i,j)) {
 				CV_IMAGE_ELEM(erro,uchar,i,j) = abs(CV_IMAGE_ELEM(disp,uchar,i,j)-CV_IMAGE_ELEM(res,uchar,i,j));
 				avgerro += CV_IMAGE_ELEM(erro,uchar,i,j);
@@ -116,9 +116,9 @@ void backtrack(int i, int j, bool flag){
     }else if(i == 0){
         backtrack(i,j-1,flag);
         int d = abs(i - (j-1));
-        if(d > maior)
+        if(d > maior && d < (0.50 * esq->width))
         	maior = d;
-        CV_IMAGE_ELEM(res, uchar, pass, i) = d * 8;
+        CV_IMAGE_ELEM(res, uchar, pass, i) = d * bits;
         if(flag){
 	        CV_IMAGE_ELEM(esq, uchar, pass, i*3  ) = CV_IMAGE_ELEM(dir, uchar, pass, (j-1)*3  );
 	        CV_IMAGE_ELEM(esq, uchar, pass, i*3+1) = CV_IMAGE_ELEM(dir, uchar, pass, (j-1)*3+1);
@@ -127,9 +127,9 @@ void backtrack(int i, int j, bool flag){
     }else if(j == 0){
         backtrack(i-1,j,flag);
         int d = abs((i-1) - j);
-        if(d > maior)
+        if(d > maior && d < (0.50 * esq->width))
         	maior = d;
-        CV_IMAGE_ELEM(res,  uchar, pass, i-1) = d * 8;
+        CV_IMAGE_ELEM(res,  uchar, pass, i-1) = d * bits;
         if(flag){
 		    CV_IMAGE_ELEM(esq, uchar, pass, (i-1)*3  ) = CV_IMAGE_ELEM(esq, uchar, pass, j*3  );
 	        CV_IMAGE_ELEM(esq, uchar, pass, (i-1)*3+1) = CV_IMAGE_ELEM(esq, uchar, pass, j*3+1);
@@ -138,9 +138,9 @@ void backtrack(int i, int j, bool flag){
     }else if(pxEquals(pass, i-1, pass, j-1)){
         backtrack(i-1,j-1,flag);
         int d = abs((i-1) - (j-1));
-        if(d > maior)
+        if(d > maior && d < (0.50 * esq->width))
         	maior = d;
-        CV_IMAGE_ELEM(res,  uchar, pass, i-1) = d * 8;
+        CV_IMAGE_ELEM(res,  uchar, pass, i-1) = d * bits;
         if(flag){
 		    CV_IMAGE_ELEM(esq, uchar, pass, (i-1)*3  ) = CV_IMAGE_ELEM(dir, uchar, pass, (j-1)*3  );
 	        CV_IMAGE_ELEM(esq, uchar, pass, (i-1)*3+1) = CV_IMAGE_ELEM(dir, uchar, pass, (j-1)*3+1);
@@ -149,9 +149,9 @@ void backtrack(int i, int j, bool flag){
     }else if(C[i][j-1] > C[i-1][j]){
         backtrack(i,j-1,flag);
         int d = abs(i - (j-1));
-        if(d > maior)
+        if(d > maior && d < (0.50 * esq->width))
         	maior = d;
-        CV_IMAGE_ELEM(res,  uchar, pass, i) = d * 8;
+        CV_IMAGE_ELEM(res,  uchar, pass, i) = d * bits;
         if(flag){
 		    CV_IMAGE_ELEM(esq, uchar, pass, i*3  ) = CV_IMAGE_ELEM(dir, uchar, pass, (j-1)*3  );
 	        CV_IMAGE_ELEM(esq, uchar, pass, i*3+1) = CV_IMAGE_ELEM(dir, uchar, pass, (j-1)*3+1);
@@ -160,9 +160,9 @@ void backtrack(int i, int j, bool flag){
     }else if(C[i][j-1] <= C[i-1][j]){//C[i][j-1] == C[i-1][j] && C[i][j] == C[i-1][j]){
         backtrack(i-1,j,flag);
 	    int d = abs((i-1) - j);
-	    if(d > maior)
+	    if(d > maior && d < (0.50 * esq->width))
 	    	maior = d;
-	    CV_IMAGE_ELEM(res,  uchar, pass, i-1) = d * 8;
+	    CV_IMAGE_ELEM(res,  uchar, pass, i-1) = d * bits;
         if(flag){
 		    CV_IMAGE_ELEM(esq, uchar, pass, (i-1)*3  ) = CV_IMAGE_ELEM(esq, uchar, pass, j*3  );
 	        CV_IMAGE_ELEM(esq, uchar, pass, (i-1)*3+1) = CV_IMAGE_ELEM(esq, uchar, pass, j*3+1);
@@ -210,6 +210,64 @@ void initC(){
 	}
 }
 
+void solve(bool flag){
+	m = esq->height;
+	n = esq->width;
+	initC();
+	for (int i = 0; i < m; ++i){
+		pass = i;
+		lcs();
+		backtrack(n,n,flag);
+	}
+	double menor = 200;
+	dd mdc(200,201), mdd(201,202); //menor media de erro crescente e decrescente
+	if(flag){
+		// ii meno = ii(-1,-1); //A janela com o menor erro.
+		int vec[] = {7,9,11,17,19}, tam = 5, cresc = 0, dec = tam - 1;
+		for (int i = 0; i < tam && dec > cresc; i++){
+			int aux;
+			if(i % 2 == 0){
+				// cout << vec[cresc];
+				mdc.second = mdc.first;
+				mdc.first = average(vec[cresc], 11, abs);
+				if(mdc.second <= mdc.first){
+					i = 20;
+					continue;
+				}
+				if(menor > mdc.first){
+					menor = mdc.first;
+					// meno = ii(vec[cresc],11);
+				}
+				cresc++;
+			}else{
+				// cout << vec[dec];
+				mdd.second = mdd.first;
+				mdd.first = average(vec[dec], 11, abs);
+				if(mdd.second <= mdd.first){
+					i = 20;
+					continue;
+				}
+				if(menor > mdd.first){
+					menor = mdd.first;
+					// meno = ii(vec[dec],11);
+				}
+				dec--;
+			}
+			// cout << "x" << 11 << endl;
+			//Media decrecente maior que a crescente?
+			if(mdc.first > mdd.first){
+				i = tam * 2;
+				continue;
+			}
+		}
+		// cout << "MENOR " << meno.first << "x" << meno.second << endl;
+	}
+	else
+		menor = averageLCS();
+
+	printf("Erro médio: %lf\n", menor);
+}
+
 int main(int argc, char **argv) {
 
 	esq = cvLoadImage(argv[1], 1);
@@ -224,140 +282,14 @@ int main(int argc, char **argv) {
 
 	if(argc > 4 && strcmp(argv[4],"true") == 0)
 		flag = true;
-	
+
+	if(argc > 5)
+		bits = argv[5][0] - '0';
+
+	// printf("DIM: %dx%d\n", esq->width, esq->height);
 	const clock_t begin_time = clock();
-
-	m = esq->height;
-	n = esq->width;
-	cout << "DIM: " <<  esq->width << "x" << esq->height << endl;
-	initC();
-	for (int i = 0; i < m; ++i){
-		pass = i;
-		lcs();
-		backtrack(n,n,flag);
-	}
-	// cout << "MAIOR: " <<  maior << endl;
-	int densidade = esq->width / esq->height;
-	double menor = 200;//, mdc=200, mdd=201;
-	dd mdc(200,201);
-	dd mdd(201,202);
-	if(flag){
-		ii meno = ii(-1,-1);
-		int vec[] = {7,9,11,17,19}; 
-		int tam = 5;
-		//TODO: O passo do for e 1 - ult, 2 - penult ...
-		// for (int i = 0; i < tam; i++){
-		// 	cout << vec[i] << "x" << 11 << endl;
-		// 	mda = md;
-		// 	if(densidade < 1)
-		// 		md = average(vec[i], 11, abs);
-		// 	else
-		// 		md = average(11, vec[i], abs);
-		// 	if(mda <= md){
-		// 		i = 20;
-		// 		continue;
-		// 	}
-		// 	cout << md << endl;
-		// 	if(menor > md){
-		// 		menor = md;
-		// 		meno = ii(vec[i],11);
-		// 	}
-		// }
-		int cresc = 0, desc = tam - 1;
-		for (int i = 0; i < tam && desc > cresc; i++){
-			int aux;
-			if(i % 2 == 0){
-				// cout << vec[cresc] << "x" << 11 << endl;
-				mdc.second = mdc.first;
-				mdc.first = average(vec[cresc], 11, abs);
-				// cout << mdc.first << " >= " << mdc.second << endl;
-				if(mdc.second <= mdc.first){
-					i = 20;
-					continue;
-				}
-				if(menor > mdc.first){
-					menor = mdc.first;
-					meno = ii(vec[cresc],11);
-				}
-				cresc++;
-			}else{
-				// cout << vec[desc] << "x" << 11 << endl;
-				mdd.second = mdd.first;
-				mdd.first = average(vec[desc], 11, abs);
-				// cout << mdd.first << " >= " << mdd.second << endl;
-				if(mdd.second <= mdd.first){
-					i = 20;
-					continue;
-				}
-				if(menor > mdd.first){
-					menor = mdd.first;
-					meno = ii(vec[desc],11);
-				}
-				desc--;
-			}
-			// cout << mdc.first << " =?= " << mdd.first << endl;
-			//Media descrecente maior que a crescente?
-			if(mdc.first > mdd.first){
-				i = tam * 2;
-				continue;
-			}
-		}
-		// cout << "MENOR " << meno.first << "x" << meno.second << endl;
-	}
-	else
-		menor = averageLCS();
-	
-	cout << "Erro médio: " << menor << endl;
-	cout << "Runtime: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << endl;
-
-	// 	}else if(!strcmp(argv[4],"sqr")){
-	// 		average(sqr);
-	// 	}else{
-	// 		cout << "ABS" << endl;
-	// 		average(abs);
-	// 	}
-	// }else{
-	// 	cout << "ABS" << endl;
-	// 	average(abs);
-	// }
-	// bool aumVert = false;
-	// double media = 200, ma = 201;
-	// int z = 5, w = 11;
-	// while((media < ma || !aumVert)){
-		// aumVert = false;
-		// cout << w << "x" << z << endl;
-		// z += 2;
-		// ma = media;
-		// if(abs(media-ma) <= 0.01){
-		// 	break;
-		// }
-
-		// if(media > ma){
-		// 	cout << "aumento vertical" << endl; 
-		// 	if(!aumVert){
-		// 		media = 200;
-		// 		ma = 201;
-		// 		z = z / 2;			
-		// 		if(z % 2 == 0)
-		// 			z++;
-
-		// 	}
-		// 	w += 2;
-		// 	aumVert = true;
-		// }
-
-		// if(z > 14){
-
-		// 	z = (z / 2);
-
-		// 	if(z % 2 == 0)
-		// 		z--;
-
-		// 	if(w == 0){
-		// 		w = 1;
-		// 	}else
-		// 		w += 2;
-		// }
+	solve(flag);
+	printf("Runtime: %.2f secs.\n", float( clock () - begin_time ) /  CLOCKS_PER_SEC);
 
 	while(cvWaitKey(10) < 0) {
 		cvShowImage("Direita", dir);
@@ -366,7 +298,6 @@ int main(int argc, char **argv) {
 		cvShowImage("Resultado", res);
 		cvShowImage("Erro", erro);
 	}
-	// }
 
 	cvReleaseImage(&dir);
 	cvReleaseImage(&esq);
