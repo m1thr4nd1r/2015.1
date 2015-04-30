@@ -1,0 +1,147 @@
+Janela indo de [-base, base-1]
+
+TEST1
+
+1x1
+Erro médio: 95.0721
+3x3
+Erro médio: 28.6802
+5x5
+Erro médio: 14.2629
+7x7
+Erro médio: 13.0547
+9x9
+Erro médio: 13.4771
+11x11
+Erro médio: 13.9332
+
+TEST2
+
+1x1
+Erro médio: 79.9502
+3x3
+Erro médio: 16.3047
+5x5
+Erro médio: 9.7056
+7x7
+Erro médio: 7.98903
+9x9
+Erro médio: 7.34041
+11x11
+Erro médio: 7.15756
+
+TEST3
+
+1x1
+Erro médio: 108.587
+3x3
+Erro médio: 21.9644
+5x5
+Erro médio: 15.9318
+7x7
+Erro médio: 13.5431
+9x9
+Erro médio: 12.419
+11x11
+Erro médio: 11.8447
+
+TEST4
+
+1x1
+Erro médio: 70.8254
+3x3
+Erro médio: 25.1961
+5x5
+Erro médio: 17.353
+7x7
+Erro médio: 13.5477
+9x9
+Erro médio: 11.0796
+11x11
+Erro médio: 9.50609
+
+VARIANDO APENAS HORIZONTALMENTE
+
+TEST1
+
+1x1
+Erro médio: 54.0011
+3x3
+Erro médio: 43.1574
+5x5
+Erro médio: 31.0531
+7x7
+Erro médio: 23.4702
+9x9
+Erro médio: 19.8642
+11x11
+Erro médio: 18.0307
+
+TEST2
+
+1x1
+Erro médio: 35.0231
+3x3
+Erro médio: 23.3005
+5x5
+Erro médio: 17.4802
+7x7
+Erro médio: 14.3243
+9x9
+Erro médio: 12.4314
+11x11
+Erro médio: 11.318
+
+TEST3
+
+1x1
+Erro médio: 36.1092
+3x3
+Erro médio: 25.694
+5x5
+Erro médio: 20.8409
+7x7
+Erro médio: 18.3611
+9x9
+Erro médio: 16.8127
+11x11
+Erro médio: 15.7039
+
+TEST4
+
+1x1
+Erro médio: 38.8522
+3x3
+Erro médio: 30.6371
+5x5
+Erro médio: 25.6459
+7x7
+Erro médio: 22.3019
+9x9
+Erro médio: 20.0313
+11x11
+Erro médio: 18.3112
+
+APENAS HORIZONTALMENTE AUMENTANDO A JANELA
+
+1x1
+Erro médio: 43.1574
+3x3
+Erro médio: 31.0531
+5x5
+Erro médio: 23.4702
+7x7
+Erro médio: 19.8642
+9x9
+Erro médio: 18.0307
+11x11
+Erro médio: 17.294
+13x13
+Erro médio: 17.0733
+15x15
+Erro médio: 17.0073
+17x17
+Erro médio: 17.078
+
+APOS 17 a media do erro aumentou
+
