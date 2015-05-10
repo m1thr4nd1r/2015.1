@@ -182,7 +182,7 @@ IplImage* separationI(IplImage *img, int seeds, int limiar)
 							change = true;
 						}
 					}
-					if (i > 0 && CV_IMAGE_ELEM(cat,int,i-1,j) != -1)	
+					else if (i > 0 && CV_IMAGE_ELEM(cat,int,i-1,j) != -1)	
 					{
 						dist = 	abs(CV_IMAGE_ELEM(img,uchar,i,j*3)-CV_IMAGE_ELEM(img,uchar,i-1,j*3)) +
 								abs(CV_IMAGE_ELEM(img,uchar,i,j*3+1)-CV_IMAGE_ELEM(img,uchar,i-1,j*3+1)) +
@@ -193,7 +193,7 @@ IplImage* separationI(IplImage *img, int seeds, int limiar)
 							change = true;
 						}
 					}
-					if (j > 0 && CV_IMAGE_ELEM(cat,int,i,j-1) != -1)	
+					else if (j > 0 && CV_IMAGE_ELEM(cat,int,i,j-1) != -1)	
 					{
 						dist = 	abs(CV_IMAGE_ELEM(img,uchar,i,j*3)-CV_IMAGE_ELEM(img,uchar,i,(j-1)*3)) +
 								abs(CV_IMAGE_ELEM(img,uchar,i,j*3+1)-CV_IMAGE_ELEM(img,uchar,i,(j-1)*3+1)) +
@@ -204,7 +204,7 @@ IplImage* separationI(IplImage *img, int seeds, int limiar)
 							change = true;
 						}
 					}
-					if (j < cat->width-1 && CV_IMAGE_ELEM(cat,int,i,j+1) != -1)	
+					else if (j < cat->width-1 && CV_IMAGE_ELEM(cat,int,i,j+1) != -1)	
 					{
 						dist = 	abs(CV_IMAGE_ELEM(img,uchar,i,j*3)-CV_IMAGE_ELEM(img,uchar,i,(j+1)*3)) +
 								abs(CV_IMAGE_ELEM(img,uchar,i,j*3+1)-CV_IMAGE_ELEM(img,uchar,i,(j+1)*3+1)) +
