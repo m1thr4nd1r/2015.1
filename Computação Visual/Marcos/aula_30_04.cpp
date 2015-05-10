@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 		saida = cvCreateImage(Size(img->width, img->height),IPL_DEPTH_8U,3);
 		dist = cvCreateImage(Size(img->width, img->height),IPL_DEPTH_32S,1);
 		segmentada = cvCreateImage(Size(img->width, img->height),IPL_DEPTH_32S,1);
-		
+
 		for (int i = 0; i < img->height; ++i){
 			for (int j = 0; j < img->width; ++j){
 				CV_IMAGE_ELEM(segmentada, int, i, j) = -1;
@@ -133,7 +133,8 @@ int main(int argc, char **argv) {
 			}
 			limiar += 255;
 		}
-
+		
+		cout << "Limiar: " << limiar << ", sementes: " << semente << endl;
 		cout << "Qtd. px nao segmentado: " << countNotSegmented() << endl;
 		cout << "Toda segmentada? " << (isAllSegmented() ? "True" : "False") << endl;
 
