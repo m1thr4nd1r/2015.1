@@ -13,20 +13,19 @@ using namespace std;
 
 typedef pair <int,int> ii;
 typedef pair <double,double> dd;
-typedef pair <double,dd> tripla;
+typedef pair <double,dd> cor;
 typedef vector < vector < int > > vvi;
 typedef long long ll;
 
 IplImage *esq, *dir, *disp, *res, *erro;
 ll ** C, M, N;
 
-int pass, maior = 31;
-int bits = 8;
+int pass, maior = 31, bits = 8, t_equal = 22;
 bool DEBUG = false;
 
 ll sqr(ll a){ return (a) * (a); }
 
-double module(tripla v){
+double module(cor v){
 	return abs(v.first) + abs(v.second.first) + abs(v.second.second);
 }
 
@@ -34,8 +33,8 @@ double dotProd(double a, double b, double c, double x, double y, double z){
 	return (a)*(x)+(b)*(y)+(c)*(z);
 }
 
-tripla crossProd(double a, double b, double c, double x, double y, double z){
-	return tripla(b * z - c * y, dd(c * x - a * z, a * y - b * x));
+cor crossProd(double a, double b, double c, double x, double y, double z){
+	return cor(b * z - c * y, dd(c * x - a * z, a * y - b * x));
 }
 
 /**
@@ -53,18 +52,18 @@ tripla crossProd(double a, double b, double c, double x, double y, double z){
 int getMatching(int i, int j, int mh, int mv, int range){
 	int d = 0, angMin = INT_MAX, base = mh / 2, base2 = mv / 2;
 	double dist, distmin = INT_MAX;
-	for(int k = j; k < j + range && k < esq->width; k++){
+	for(int k = j+1; k < esq->width && k < j + range; k++){
 		dist = 0;
 		for(int o = -base2; o <= base2; o++){
 			for(int a = -base; a <= base; a++){
-				if(i + o < 0 || k + a < 0 || i + o > dir->height || k + a > dir->width)
+				if(i + o < 0 || k + a < 0 || i + o >= dir->height || k + a > dir->width)
 					continue;
 				dist += sqrt(abs(CV_IMAGE_ELEM(esq, uchar, i+o, (k+a)*3  ) - CV_IMAGE_ELEM(dir, uchar, i+o, (j+a)*3  )) +
 							 abs(CV_IMAGE_ELEM(esq, uchar, i+o, (k+a)*3+1) - CV_IMAGE_ELEM(dir, uchar, i+o, (j+a)*3+1)) +
 							 abs(CV_IMAGE_ELEM(esq, uchar, i+o, (k+a)*3+2) - CV_IMAGE_ELEM(dir, uchar, i+o, (j+a)*3+2)));
 			}
 		}
-		if(dist < distmin) {
+		if(dist < distmin){
 			distmin = dist;
 			d = k-j;
 		}
@@ -75,13 +74,13 @@ int getMatching(int i, int j, int mh, int mv, int range){
 /**
 * CODIGO DO BASE DO PROFESSOR
 */
-double average(int mh, int mv, bool lcs){
+double averageErro(int mh, int mv, bool is_lcs){
 	int n=0, i, j;
 	double avgerro = 0;
 	if(DEBUG) printf("AVERAGE: %dx%d\n",mh,mv);
 	for(i=0; i < esq->height; i++) {
 		for(j=0; j < esq->width; j++) {
-			if(!lcs){
+			if(!is_lcs){
 				int d = getMatching(i, j, mh, mv, maior);
 				CV_IMAGE_ELEM(res,uchar,i,j) = d * bits; //NAO MUDAR
 			}
@@ -95,11 +94,96 @@ double average(int mh, int mv, bool lcs){
 	return avgerro / n;
 }
 
+/**
+ * Borra a imagem utilizando a media aritmetica
+ * @param a imagem fonte
+ * @param a mascara de entrada e saida da imagem
+ * @param filtro 3[3x3], 5[5x5] ...
+ */
+void averageBlur(IplImage * img, IplImage * mask, int m, bool is_colored){
+	int i, j, a, b, w = img->width, h = img->height;
+	for(a = 0; a < h; a++){
+		for(b = 0; b < w; b++){
+			long soma[] = {0,0,0}, cont = 0, base = m / 2;
+			for(i = -base; i <= base; i++){
+				for(j = -base; j <= base; j++){
+					if(a + i < 0 || b + j < 0 || a + i > h || b + j > w)
+						continue;
+					if(is_colored){
+						soma[0] += CV_IMAGE_ELEM(img, uchar, a + i , (b + j) *3    );
+						soma[1] += CV_IMAGE_ELEM(img, uchar, a + i , (b + j) *3 + 1);
+						soma[2] += CV_IMAGE_ELEM(img, uchar, a + i , (b + j) *3 + 2);
+					}else{
+						soma[0] += CV_IMAGE_ELEM(img, uchar, a + i , b + j);
+					}
+					cont++;
+				}
+			}
+			if(is_colored){
+				CV_IMAGE_ELEM(mask, uchar, a, b*3  ) = (unsigned char)(soma[0] / cont);
+				CV_IMAGE_ELEM(mask, uchar, a, b*3+1) = (unsigned char)(soma[1] / cont);
+				CV_IMAGE_ELEM(mask, uchar, a, b*3+2) = (unsigned char)(soma[2] / cont);
+			}else{
+				CV_IMAGE_ELEM(mask, uchar, a, b) = (unsigned char)(soma[0]/cont);
+			}
+		}
+	}
+}
+
+/**
+ * Comparacao
+ * @param
+ * @param
+ * @return
+ */
+int compare (const void * a, const void * b){
+  return ( *(int*)a - *(int*)b );
+}
+
+/**
+ * Borra a imagem utilizando a mediana dos pixels, eliminando ruidos na imagem.
+ * @param a imagem fonte
+ * @param a mascara de entrada e saida da imagem
+ * @param filtro 3[3x3], 5[5x5] ...
+ */
+void medianBlur(IplImage * img, IplImage * mask, int m, bool is_colored){
+	int i, j, a, b, w = img->width, h = img->height;
+	int vet[m * m][3];
+	for(a = 0; a < h; a++){
+		for(b = 0; b < w; b++){
+			long cont = 0, base = m / 2;
+			for(i = -base; i <= base; i++){
+				for(j = -base; j <= base; j++){
+					if(a + i < 0 || b + j < 0 || a + i > h || b + j > w)
+						continue;
+					if(is_colored){
+						vet[cont][0] = CV_IMAGE_ELEM(img, uchar, a + i , (b + j)*3    );
+						vet[cont][1] = CV_IMAGE_ELEM(img, uchar, a + i , (b + j)*3 + 1);
+						vet[cont][2] = CV_IMAGE_ELEM(img, uchar, a + i , (b + j)*3 + 2);
+						cont += 2;
+					}else{
+						vet[cont][0] = CV_IMAGE_ELEM(img, uchar, a + i , b + j);
+					}
+					cont++;
+				}
+			}
+			qsort(vet, cont, sizeof(int), compare); //quickSort
+			if(is_colored){
+				CV_IMAGE_ELEM(mask, uchar, a, (b*3  )) = (cont % 2 == 0) ? (vet[cont / 2][0] + vet[cont / 2 + 1][0]) / 2 : vet[cont / 2 + 1][0];
+				CV_IMAGE_ELEM(mask, uchar, a, (b*3+1)) = (cont % 2 == 0) ? (vet[cont / 2][1] + vet[cont / 2 + 1][1]) / 2 : vet[cont / 2 + 1][1];
+				CV_IMAGE_ELEM(mask, uchar, a, (b*3+2)) = (cont % 2 == 0) ? (vet[cont / 2][2] + vet[cont / 2 + 1][2]) / 2 : vet[cont / 2 + 1][2];
+			}else{
+				CV_IMAGE_ELEM(mask, uchar, a, b) = (cont % 2 == 0) ? (vet[cont / 2][0] + vet[cont / 2 + 1][0]) / 2 : vet[cont / 2 + 1][0];
+			}
+		}
+	}
+}
+
 bool pxEquals(int i, int j, int a, int b){
 	int dist =  abs(CV_IMAGE_ELEM(esq, uchar, i, j*3  ) - CV_IMAGE_ELEM(dir, uchar, a, b*3  )) +
 				abs(CV_IMAGE_ELEM(esq, uchar, i, j*3+1) - CV_IMAGE_ELEM(dir, uchar, a, b*3+1)) +
 				abs(CV_IMAGE_ELEM(esq, uchar, i, j*3+2) - CV_IMAGE_ELEM(dir, uchar, a, b*3+2));
-	return dist < 26;
+	return dist < t_equal;
 }
 
 void backtrack(int i, int j, bool flag){
@@ -196,67 +280,29 @@ void initC(){
 }
 
 void solve(int flag){
+
 	initC();
 
 	if(flag == 1 || flag == 2){
 		for (int i = 0; i < M; ++i){
 			pass = i;
 			lcs();
-			backtrack(N, N, flag);
-			int  j = 0;
-			while(CV_IMAGE_ELEM(res, uchar, i, j) <= 104)
-				j++;
-			// cout << "J:" << j << endl;
-			for (int x = 0; x < j; ++x){
-				CV_IMAGE_ELEM(res, uchar, i, x) = CV_IMAGE_ELEM(res, uchar, i, j);
-			}
+			backtrack(N, N, (flag != 2));
 		}
 	}
+
+	medianBlur(res, res, 3, false);
+	averageBlur(res, res, 13, false);
 
 	if(DEBUG) printf("MAIOR: %d\n", maior);
 
 	double menor = 200;
-	if(flag == 1 || flag == 3){
-		dd mdc(200,201), mdd(202,203); //menor media de erro crescente e decrescente
-		int vec[] = {7,9,11,17,19}, tam = 5, cresc = 0, dec = tam - 1;
-		for (int i = 0; i < tam && dec >= cresc; i++){
+	if(flag == 1 || flag == 3)
+		menor = averageErro(7, 11, false);
+	else 
+		menor = averageErro(0, 0, true);
+	cout << "Erro médio: " << menor << endl;
 
-			if(DEBUG) printf("1. mdcAtual: %lf, mdcAnt: %lf, mddAtual: %lf, mddAnt: %lf\n", mdc.first, mdc.second, mdd.first, mdd.second);
-
-			if(i % 2 == 0){
-				mdc.second = mdc.first;
-				mdc.first = average(vec[cresc], 11, false);
-
-				if(DEBUG) printf("1. %lf <=? %lf\n", mdc.second, mdc.first);
-
-				if(mdc.second <= mdc.first){
-					if(DEBUG) printf("media anterior <= media atual.\n");
-					break;
-				}
-				if(menor > mdc.first){
-					menor = mdc.first;
-				}
-				cresc++;
-			}else{
-				mdd.second = mdd.first;
-				mdd.first = average(vec[dec], 11, false);
-
-				if(DEBUG) printf("2. %lf <=? %lf\n", mdd.second, mdd.first);
-
-				if(menor > mdd.first){
-					menor = mdd.first;
-				}
-				dec--;
-			}
-			if(DEBUG) printf("2. mdcAtual: %lf, mdcAnt: %lf, mddAtual: %lf, mddAnt: %lf\n", mdc.first, mdc.second, mdd.first, mdd.second);
-			//Media decrecente maior que a crescente?
-			if(mdc.first > mdd.first){
-				if(DEBUG) printf("media i do vetor eh maior que a media N-i.\n");
-				break;
-			}
-		}
-	}else menor = average(0,0,true);
-	printf("Erro médio: %lf\n", menor);
 }
 
 /**
@@ -280,23 +326,20 @@ int main(int argc, char **argv) {
 	res = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_8U, 1);
 	erro = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_8U, 1);
 
-	int flag = 1; //AMBOS lcs + JDM
+	int flag = 1;
 
 	if(argc > 4 && strcmp(argv[4],"debug") == 0) DEBUG = true;
 	if(argc > 4 && strcmp(argv[4],"lcs") == 0)  flag = 2;
 	if(argc > 4 && strcmp(argv[4],"jdm") == 0) flag = 3;
 	if(argc > 5 && (argv[5][0] == '4' || argv[5][0] == '8')) bits = argv[5][0] - '0';
-	if(argc > 6 && strcmp(argv[6],"true") == 0) DEBUG = true;
+	if(argc > 5 && strcmp(argv[5],"debug") == 0) DEBUG = true;
+	if(argc > 6 && strcmp(argv[6],"debug") == 0) DEBUG = true;
 
 	if(DEBUG) printf("bits: %d, flag: %d, maior inicial: %d\n", bits, flag, maior);
 
 	M = esq->height; N = esq->width;
 
 	const clock_t begin_time = clock();
-	// cout << dotProd(3,4,5,6,8,10) << endl;
-	// iii v = crossProd(3,4,5,6,8,10);
-	// cout << (sqr(v.first) + sqr(v.second.first) + sqr(v.second.second)) << endl; 
-	// cout << v.first << ", " << v.second.first << ", " << v.second.second << endl;
 	solve(flag);
 	printf("Runtime: %.2f secs.\n", float( clock () - begin_time ) /  CLOCKS_PER_SEC);
 
