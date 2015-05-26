@@ -1,0 +1,72 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+%\usepackage[colorinlistoftodos]{todonotes}
+%\usepackage{listings}
+\oddsidemargin=0in
+\topmargin=0in
+\headheight=0pt
+\headsep=0pt
+\parindent=0pt
+\textwidth = 450pt
+\textheight = 700pt
+
+\begin{document}
+
+	\begin{titlepage}
+
+		\begin{center}
+
+			\huge{Universidade Federal da Bahia}
+
+			\vspace{100pt}
+
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[width=3cm]{UFBA.png}
+			\end{figure}
+			        
+			\vspace{75pt}
+
+			\textbf{\LARGE{Relatório}}\\
+			\large{Imagem Estéreo}
+
+			\vspace{160pt}
+
+			Marcos Antônio de Souza Silva\\
+			Salvador - Bahia \date{today} \\
+
+		\end{center}
+
+	\end{titlepage}
+
+	\newpage
+
+	\pagenumbering{arabic}
+	
+	\section{Descrição do algoritmo implementado}
+
+	O algoritmo implementado utiliza:
+
+	\subsection{Longest Common Subsequence(LCS)}
+	
+	O LCS implementado foi baseado no algoritmo implementado como solução do problema do SPOJ - Parque Jurássico, http://br.spoj.com/problems/PARQUE/. 
+	O algoritmo LCS encontra a maior subsequencia comum entre strings A e B. O algoritmo monta uma matriz, de inteiros, C de dimensão M+1xN+1, onde M é o tamanho da string A e N é o tamanho da string B. Onde o indice de cada linha de C representa o mesmo indice na palavra A e o indice de cada coluna representa o mesmo indice na palavra B. A primeira linha, linha 0, e a primeira coluna, coluna 0, da matriz C inicializados com zero. \\
+
+	Percorre-se a matriz checando se os indices i e j correspondem a mesma letra nas duas palavras caso sejam iguais é acrescentado 1 a posição dos indices, C[i][j], recebe o valor C[i-1][j-1] + 1, para indicar que foi encontrada mais uma letra em comum. Ao final, a matriz C, conterá o tamanho da maior substring comum, até posição i e j das palavras.\\
+
+	Adaptei o LCS imaginando que cada linha das duas imagens de entrada, a esquerda e a direta, fosse a string A e B, respectivamente. E assim, para cada linha i das imagens, 0 <= i < altura da imagem - 1, aplico o LCS, gerando uma matriz C, com dimensão WxW, onde W é o valor da largura da imagem e aplico o backtrack.
+
+	\subsubsection{Backtrack}
+
+	Após aplicar o LCS, a cada linha i, das imagens, utilizava o algoritmo backtrack para obter a menor sequência que continha as duas imagens como subsequências.
+
+	\subsection{Cálcular a distância}
+
+	Utiliza-se a raiz da distância absoluta, uma vez, que a mesma mostrou-se mais eficaz quando usada, do que os outras formas de cálculos da distância.
+
+\end{document}

@@ -3,8 +3,8 @@
 #include <iostream>
 #include <cstdio>
 
-#define FILL_IPL(img, type, x) for (int i = 0; i < img->height; ++i) for (int j = 0; j < img->width; ++j) CV_IMAGE_ELEM(img, type, i, j) = x
-#define PRINT_IPL(img, type, sep) for (int i = 0; i < img->height; ++i){ for (int j = 0; j < img->width; ++j){ cout << CV_IMAGE_ELEM(img, type, i, j) - '\0' << sep; } cout << endl; }
+#define FILL_IPL(img, uchar, x) for (int i = 0; i < img->height; ++i) for (int j = 0; j < img->width; ++j) CV_IMAGE_ELEM(img, uchar, i, j) = x
+#define PRINT_IPL(img, uchar) for (int i = 0; i < img->height; ++i){ for (int j = 0; j < img->width; ++j){ cout << CV_IMAGE_ELEM(img, uchar, i, j) - '\0' << " "; } cout << endl; }
 
 #define min(a, b) (a > b) ? b : a
 #define max(a, b) (a > b) ? a : b
@@ -14,17 +14,14 @@ using namespace std;
 typedef pair <int,int> ii;
 typedef pair <double,double> dd;
 typedef pair <double,dd> cor;
-typedef vector < IplImage * > vip;
 typedef vector < vector < int > > vvi;
 typedef long long ll;
 
-IplImage *esq, *dir, *disp, *res, *erro, * i_image, * i_dir;
+IplImage *esq, *dir, *disp, *res, *erro;
 ll ** C, M, N;
 
 int pass, maior = 31, bits = 8, t_equal = 22;
 bool DEBUG = false;
-
-vip integrais;
 
 ll sqr(ll a){ return (a) * (a); }
 
@@ -38,12 +35,6 @@ double dotProd(double a, double b, double c, double x, double y, double z){
 
 cor crossProd(double a, double b, double c, double x, double y, double z){
 	return cor(b * z - c * y, dd(c * x - a * z, a * y - b * x));
-}
-
-int distance(int i, int j, int a, int b){
-	return  abs(CV_IMAGE_ELEM(esq, uchar, i, j*3  ) - CV_IMAGE_ELEM(dir, uchar, a, b*3  )) +
-			abs(CV_IMAGE_ELEM(esq, uchar, i, j*3+1) - CV_IMAGE_ELEM(dir, uchar, a, b*3+1)) +
-			abs(CV_IMAGE_ELEM(esq, uchar, i, j*3+2) - CV_IMAGE_ELEM(dir, uchar, a, b*3+2));
 }
 
 /**
@@ -65,49 +56,16 @@ int getMatching(int i, int j, int mh, int mv, int range){
 		dist = 0;
 		for(int o = -base2; o <= base2; o++){
 			for(int a = -base; a <= base; a++){
-				if(i + o < 0 || k + a < 0 || i + o >= dir->height || k + a > dir->width || j + a > dir->width)
+				if(i + o < 0 || k + a < 0 || i + o >= dir->height || k + a > dir->width)
 					continue;
-				dist += sqrt(distance(i+o,k+a,i+o,j+a));
+				dist += sqrt(abs(CV_IMAGE_ELEM(esq, uchar, i+o, (k+a)*3  ) - CV_IMAGE_ELEM(dir, uchar, i+o, (j+a)*3  )) +
+							 abs(CV_IMAGE_ELEM(esq, uchar, i+o, (k+a)*3+1) - CV_IMAGE_ELEM(dir, uchar, i+o, (j+a)*3+1)) +
+							 abs(CV_IMAGE_ELEM(esq, uchar, i+o, (k+a)*3+2) - CV_IMAGE_ELEM(dir, uchar, i+o, (j+a)*3+2)));
 			}
 		}
-		// cout << k - j << " ::> " << dist << " < " << distmin << " ant " << d << endl; 
 		if(dist < distmin){
 			distmin = dist;
 			d = k-j;
-		}
-	}
-	return d;
-}
-
-int getMatching2(int i, int j, int mh, int mv, int range){
-	int d = 0, base = mv / 2, base2 = mh / 2;
-	double dist, distmin = INT_MAX;
-	for(int k = 0; j + k < esq->width && k < range; ++k){
-		dist = 0;
-
-		if(DEBUG){
-			cout << "bv " << base << ", bh " << base2 << ", K " << k + 1 << ", C(" << i + base << "," << j + base2 << ") - ";  
-			if(i - base - 1 >= 0 && j - base2 - 1 >= 0)
-				cout << "A: " << CV_IMAGE_ELEM(integrais[k], double, i - base - 1, j - base2 - 1) << " ";
-			if(i - base - 1 >= 0 && j + base2 < esq->width)
-				cout << "B: " << CV_IMAGE_ELEM(integrais[k], double, i - base - 1, j + base2) << " ";
-			cout << "C: " << CV_IMAGE_ELEM(integrais[k], double, min(i + base,esq->height-1), min(j + base2, esq->width-1)) << " ";
-			if(i + base < esq->height && j - base2 - 1 >= 0)
-				cout << "D: " << CV_IMAGE_ELEM(integrais[k], double, i + base, j - base2 - 1) << endl;
-		}
-
-		dist += CV_IMAGE_ELEM(integrais[k], double, min(i + base, esq->height-1), min(j + base2, esq->width-1)); // C
-		if(i - base - 1 >= 0 && j - base2 - 1 >= 0)
-			dist += CV_IMAGE_ELEM(integrais[k], double, i - base - 1, j - base2 - 1); // A
-		if(i - base - 1 >= 0 && j + base2 < esq->width)
-			dist -= CV_IMAGE_ELEM(integrais[k], double, i - base - 1, j + base2); 	  // B
-		if(i + base < esq->height && j - base2 - 1 >= 0)
-			dist -= CV_IMAGE_ELEM(integrais[k], double, i + base, j - base2 - 1); 	  // D
-
-		if(DEBUG) cout << k+1 << " => " << dist << " < " << distmin << " ant: " << d << endl;
-		if(dist < distmin){
-			distmin = dist;
-			d = k+1;
 		}
 	}
 	return d;
@@ -124,26 +82,6 @@ double averageErro(int mh, int mv, bool is_lcs){
 		for(j=0; j < esq->width; j++) {
 			if(!is_lcs){
 				int d = getMatching(i, j, mh, mv, maior);
-				// int d2 = getMatching2(i, j, mh, mv, maior);
-				// if(d != d2){
-				// 	int base = mh/2, base2 = mv/2;
-				// 	cout << i << "," << j << ": " << d << "==" << d2 << "?" << endl;
-				// 	cout << "Salto: +" << d2 + 1 << endl;
-				// 	for(i=0; i < esq->height; i++) {
-				// 		for(j=0; j < esq->width; j++) {
-				// 			for(int o = -base2; o <= base2; o++){
-				// 				for(int a = -base; a <= base; a++){
-				// 					cout << sqrt(distance(i+o,j+5+a,i+o,j+a)) << ";";
-				// 				}
-				// 				cout << endl;
-				// 			}
-				// 			cout << endl;
-				// 		}
-				// 	} 
-				// 	PRINT_IPL(integrais[d2],double,";");
-				// 	cout << endl;
-				// 	exit(0);
-				// }
 				CV_IMAGE_ELEM(res,uchar,i,j) = d * bits; //NAO MUDAR
 			}
 			if(CV_IMAGE_ELEM(disp,uchar,i,j)){
@@ -242,7 +180,9 @@ void medianBlur(IplImage * img, IplImage * mask, int m, bool is_colored){
 }
 
 bool pxEquals(int i, int j, int a, int b){
-	int dist =  distance(i,j,a,b);
+	int dist =  abs(CV_IMAGE_ELEM(esq, uchar, i, j*3  ) - CV_IMAGE_ELEM(dir, uchar, a, b*3  )) +
+				abs(CV_IMAGE_ELEM(esq, uchar, i, j*3+1) - CV_IMAGE_ELEM(dir, uchar, a, b*3+1)) +
+				abs(CV_IMAGE_ELEM(esq, uchar, i, j*3+2) - CV_IMAGE_ELEM(dir, uchar, a, b*3+2));
 	return dist < t_equal;
 }
 
@@ -361,24 +301,6 @@ void initC(){
 	}
 }
 
-void integralImage(){
-
-	for (int x = 0; x < integrais.size(); ++x) 
-		integrais[x] = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_64F, 1);
-
-	for (int x = 0; x < integrais.size(); ++x){
-		for (int i = 0; i < esq->height; ++i){
-			for (int j = 0; j < esq->width; ++j){
-				CV_IMAGE_ELEM(integrais[x], double, i, j) = sqrt(distance(i, j + x + 1, i, j));
-				if(j > 0) CV_IMAGE_ELEM(integrais[x], double, i, j) +=  CV_IMAGE_ELEM(integrais[x], double, i, j-1);
-				if(i > 0) CV_IMAGE_ELEM(integrais[x], double, i, j) +=  CV_IMAGE_ELEM(integrais[x], double, i-1, j);
-				if(i > 0 && j > 0) CV_IMAGE_ELEM(integrais[x], double, i, j) -= CV_IMAGE_ELEM(integrais[x], double, i-1, j - 1);
-			}
-		}
-	}
-
-}
-
 void solve(int flag){
 
 	initC();
@@ -390,13 +312,6 @@ void solve(int flag){
 			backtrack(N, N, (flag != 2));
 		}
 	}
-
-	if(maior >= dir->width) maior = dir->width-1;
-	integrais = vip(maior);
-	integralImage();
-
-	medianBlur(res, res, 5, false);
-	averageBlur(res, res, 11, false);
 
 	if(DEBUG) printf("MAIOR: %d\n", maior);
 
@@ -423,15 +338,12 @@ int main(int argc, char **argv) {
 
 	if(argc < 4) return 0;
 
-	esq = cvLoadImage(argv[1], 1); //cvCreateImage(cvSize(4,4), IPL_DEPTH_8U, 3);
-	dir = cvLoadImage(argv[2], 1); //cvCreateImage(cvSize(4,4), IPL_DEPTH_8U, 3);
-	disp = cvLoadImage(argv[3], 0); //cvCreateImage(cvSize(4,4), IPL_DEPTH_8U, 1);
+	esq = cvLoadImage(argv[1], 1);
+	dir = cvLoadImage(argv[2], 1);
+	disp = cvLoadImage(argv[3], 0);
 
 	res = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_8U, 1);
 	erro = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_8U, 1);
-
-	// i_image = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_64F, 1);
-	// i_image = cvCreateImage(cvSize(esq->width,esq->height), IPL_DEPTH_32S, 1);
 
 	int flag = 1;
 
@@ -466,3 +378,4 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
+
