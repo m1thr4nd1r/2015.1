@@ -5,6 +5,7 @@ CPP = g++
 
 CFLAGS = -lm `pkg-config --cflags --libs opencv`
 
+SRC=stereo.cpp
 PROG = a.out
 
 all: $(OBJ)
