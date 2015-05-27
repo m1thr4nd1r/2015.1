@@ -128,7 +128,15 @@ depthFirstSearch' start g = dfs [start] []
 			| elem x vis = dfs xs vis
 			| otherwise = dfs ((adjacent g x) ++ xs) (vis ++ [x])
 
+m = array ((1,1),(2,3)) [((i,j), (i*j)) | i <-[1..2] , j <- [1..3]]
+
 main =
 	do 
-		putStrLn("Loaded")
+		putStrLn("m -> \n" ++ show(m))
+		putStrLn("m!(1,2) -> \n" ++ show(m!(1,2)))
+		putStrLn("bounds m -> \n" ++ show(bounds m))
+		putStrLn("indices m -> \n" ++ show(indices m))
+		putStrLn("elems m -> \n" ++ show(elems m))
+		putStrLn("assocs m -> \n" ++ show(assocs m))
+		putStrLn("m//[((1,1),4)] -> \n" ++ show(m//[((1,1),4)]))
 		--print( show graphAL' )
