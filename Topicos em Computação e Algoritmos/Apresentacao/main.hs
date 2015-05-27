@@ -1,5 +1,8 @@
+-- ghci --make nomedoArquivo 
+
 module Main where
 
+import Queue
 import Data.Ix
 import Data.Array
 import Data.Maybe
@@ -146,6 +149,23 @@ depthFirstSearch'' start g = dfs [(start, start)] []
 		dfs (x:xs) vis
 			| elem x vis = dfs xs vis
 			| otherwise = dfs ((mapT (fst x) (adjacent' g (snd x))) ++ xs) (vis ++ [x])
+
+--breadthFirstSearch :: (Ix a, Num a, Eq w) => a -> Graph'' a w -> [a]
+breadthFirstSearch start g
+					= reverse (bfs (enqueue start empty) [])
+	where
+		bfs q vis
+			| (isEmpty q) = vis
+			| elem (front q) vis
+							= bfs (dequeue q) vis
+			| otherwise 	= let c = front q
+							  in
+							  	bfs (foldr enqueue
+							  				(dequeue q)
+							  				(adjacent' g c))
+									(c:vis)	
+
+graphD = mkGraph'' True (1,6) [(1,2,0),(1,3,0),(1,4,0),(3,6,0),(5,4,0),(6,2,0),(6,5,0)]
 
 main =
 	do 
