@@ -21,7 +21,7 @@ graphPTR = v1
 -- Representando usando lista de adjacencia
 type Graph'' n w = Array n [(n, w)]
 
-graphAL = array (1, 5) [(1, [(2, 12), (3, 34), (5, 78)]),
+graphAL' = array (1, 5) [(1, [(2, 12), (3, 34), (5, 78)]),
 						(2, [(1, 12), (4, 55), (5, 32)]),
 						(3, [(1, 34), (4, 61), (5, 44)]), 
 						(4, [(2, 55), (3, 61), (5, 93)]),
@@ -34,7 +34,11 @@ mkGraph' dir bnds es =
 					if dir then []
 					else [(x2, (x1, w)) | (x1, x2, w) <- es, x1 /= x2])
 
-graphAL' = mkGraph' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
+graphAL = mkGraph' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
+								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
+								   (3, 5, 44), (4, 5, 93)]
+
+graphALT = mkGraph' True (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
 								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
 								   (3, 5, 44), (4, 5, 93)]
 
@@ -73,6 +77,10 @@ mkGraph'' dir bnds@(i,u) es
 				 = array ((i,i),(u,u)) [((x1,x2), Nothing) | x1 <- range bnds, x2 <- range bnds]
 
 graphAM = mkGraph'' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
+								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
+								   (3, 5, 44), (4, 5, 93)]
+
+graphAMT = mkGraph'' True (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
 								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
 								   (3, 5, 44), (4, 5, 93)]
 
