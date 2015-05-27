@@ -128,6 +128,17 @@ depthFirstSearch' start g = dfs [start] []
 			| elem x vis = dfs xs vis
 			| otherwise = dfs ((adjacent g x) ++ xs) (vis ++ [x])
 
+mapT x [] = []
+mapT x (y:xs) = (x, y) : mapT x xs
+
+--depthFirstSearch'' :: (Eq a1, Num a, Ix a) => a -> Graph''' a w -> [(a,a)] 
+depthFirstSearch'' start g = dfs [(start, start)] []
+	where
+		dfs [] vis = vis
+		dfs (x:xs) vis
+			| elem x vis = dfs xs vis
+			| otherwise = dfs ((mapT (fst x) (adjacent' g (snd x))) ++ xs) (vis ++ [x])
+
 main =
 	do 
 		putStrLn("Loaded")
