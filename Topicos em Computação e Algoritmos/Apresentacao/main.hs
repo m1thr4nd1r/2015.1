@@ -90,7 +90,6 @@ edgeIn' graphAM (x,y) = (graphAM!(x,y)) /= Nothing
 weight' x y graphAM = w where (Just w) = graphAM!(x,y)
 -- Retorna o valor do elemento [aresta] na posição (x,y), no grafo graphAM, se o mesmo não é Nothing
 
---edgesD' :: (Graph''' n w) => [(Ix a, Ix b)]
 edgesD' graphAM = [(v1,v2) | v1 <- nodes' graphAM, v2 <- nodes' graphAM, edgeIn' graphAM (v1,v2)]
 
 edgesU' g = [(v1,v2) | v1 <- nodes' graphAM, v2 <- range (v1,u), edgeIn' graphAM (v1,v2)]
@@ -99,6 +98,7 @@ edgesU' g = [(v1,v2) | v1 <- nodes' graphAM, v2 <- range (v1,u), edgeIn' graphAM
 -- FIM matrix de adjacencia
 
 -- Testes
+m = array ((1,1),(2,3)) [((i,j), (i*j)) | i <-[1..2] , j <- [1..3]]
 --a = listArray (1,3) [(2,12),(4,55),(5,44)]
 --e = [(1, 2, 12), (1, 3, 34), (1, 5, 78),
 --	   (2, 4, 55), (2, 5, 32), (3, 4, 61),
@@ -127,8 +127,6 @@ depthFirstSearch' start g = dfs [start] []
 		dfs (x:xs) vis
 			| elem x vis = dfs xs vis
 			| otherwise = dfs ((adjacent g x) ++ xs) (vis ++ [x])
-
-m = array ((1,1),(2,3)) [((i,j), (i*j)) | i <-[1..2] , j <- [1..3]]
 
 main =
 	do 
