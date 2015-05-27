@@ -34,6 +34,12 @@ mkGraph' dir bnds es =
 					if dir then []
 					else [(x2, (x1, w)) | (x1, x2, w) <- es, x1 /= x2])
 
+graphAL' = mkGraph' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
+								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
+								   (3, 5, 44), (4, 5, 93)]
+
+---
+
 adjacent g v = map fst (g!v)
 -- Aplica fst a todos os elementos de indice v do grafo g
 
@@ -58,55 +64,69 @@ edgesU g = [(v1,v2,w) | v1 <- nodes g ,(v2, w) <- g ! v1, v1 < v2]
 
 type Graph''' n w = Array (n, n) (Maybe w)
 
---mkGraph'' :: (Ix n, Num w) => Bool -> (n,n) -> [(n,n,w)] -> (Graph''' n w)
-mkGraph'' dir bnds@(1,u) es
+mkGraph'' :: (Ix n, Num w) => Bool -> (n,n) -> [(n,n,w)] -> (Graph''' n w)
+mkGraph'' dir bnds@(i,u) es
 		= emptyArray // ([((x1,x2), Just w) | (x1,x2,w) <- es] ++
 					     if dir then []
 					     else [((x2,x1), Just w) | (x1,x2,w) <- es, x1/=x2])
 		    where emptyArray
-				 = array ((1,1),(u,u)) [((x1,x2),Nothing) |
-									x1 <- range bnds,
-									x2 <- range bnds]
+				 = array ((i,i),(u,u)) [((x1,x2), Nothing) | x1 <- range bnds, x2 <- range bnds]
 
-adjacent' g1 v1 = [ v2 | v2 <- nodes' g1, (g1 ! (v1,v2)) /= Nothing ]
--- Retorna cada elemento v2, dado que v2 é um elemento [nó] do grafo g1, e que, no grafo, o elemento [aresta] (v1,v2) != Nothing
+graphAM = mkGraph'' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
+								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
+								   (3, 5, 44), (4, 5, 93)]
 
-nodes' g1 = range (1,u) where ((1,_),(u,_)) = bounds g1
+----
+
+adjacent' graphAM v1 = [ v2 | v2 <- nodes' graphAM, (graphAM ! (v1,v2)) /= Nothing ]
+-- Retorna cada elemento v2, dado que v2 é um elemento [nó] do grafo graphAM, e que, no grafo, o elemento [aresta] (v1,v2) != Nothing
+
+nodes' graphAM = range (1,u) where ((1,_),(u,_)) = bounds graphAM
 -- Retorna o range entre 1 e u, onde u é a cabeça do segundo elemento de bounds, que retorna os limites da matriz
 
-edgeIn' g1 (x,y) = (g1!(x,y)) /= Nothing
--- Retorna True se o elemento [aresta] na posição (x,y), no grafo g1, é != Nothing
+edgeIn' graphAM (x,y) = (graphAM!(x,y)) /= Nothing
+-- Retorna True se o elemento [aresta] na posição (x,y), no grafo graphAM, é != Nothing
 
-weight' x y g1 = w where (Just w) = g1!(x,y)
--- Retorna o valor do elemento [aresta] na posição (x,y), no grafo g1, se o mesmo não é Nothing
+weight' x y graphAM = w where (Just w) = graphAM!(x,y)
+-- Retorna o valor do elemento [aresta] na posição (x,y), no grafo graphAM, se o mesmo não é Nothing
 
 --edgesD' :: (Graph''' n w) => [(Ix a, Ix b)]
-edgesD' g1 = [(v1,v2) | v1 <- nodes' g1, v2 <- nodes' g1, edgeIn' g1 (v1,v2)]
+edgesD' graphAM = [(v1,v2) | v1 <- nodes' graphAM, v2 <- nodes' graphAM, edgeIn' graphAM (v1,v2)]
 
-edgesU' g = [(v1,v2) | v1 <- nodes' g1, v2 <- range (v1,u), edgeIn' g1 (v1,v2)]
-			where (_,(u,_)) = bounds g1
-
-g = mkGraph' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
-								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
-								   (3, 5, 44), (4, 5, 93)]
---graphAL' = g
-
-g1 = mkGraph'' False (1, 5) [(1, 2, 12), (1, 3, 34), (1, 5, 78),
-								   (2, 4, 55), (2, 5, 32), (3, 4, 61),
-								   (3, 5, 44), (4, 5, 93)]
+edgesU' g = [(v1,v2) | v1 <- nodes' graphAM, v2 <- range (v1,u), edgeIn' graphAM (v1,v2)]
+			where (_,(u,_)) = bounds graphAM
 
 -- FIM matrix de adjacencia
 
 -- Testes
-a = listArray (1,3) [(2,12),(4,55),(5,44)]
-e = [(1, 2, 12), (1, 3, 34), (1, 5, 78),
-	   (2, 4, 55), (2, 5, 32), (3, 4, 61),
-	   (3, 5, 44), (4, 5, 93)]
-t xs x = x:xs
-u v1 v2 = fromJust (g1!(v1,v2))
-x v1 v2 = unwrap(g1!(v1,v2))
-		   where unwrap (Just w) = w
+--a = listArray (1,3) [(2,12),(4,55),(5,44)]
+--e = [(1, 2, 12), (1, 3, 34), (1, 5, 78),
+--	   (2, 4, 55), (2, 5, 32), (3, 4, 61),
+--	   (3, 5, 44), (4, 5, 93)]
+--t xs x = x:xs
+--u v1 v2 = fromJust (graphAM!(v1,v2))
+--x v1 v2 = unwrap(graphAM!(v1,v2))
+--		   where unwrap (Just w) = w
 -- ------------
+
+------------------------------------
+-- BUSCAS
+------------------------------------
+
+depthFirstSearch start g = dfs [start] []
+	where
+		dfs [] vis = vis
+		dfs (x:xs) vis
+			| elem x vis = dfs xs vis
+			| otherwise = dfs ((adjacent g x) ++ xs) (vis ++ [x])
+
+depthFirstSearch' :: Ix a => a -> Graph'' a w -> [a] 
+depthFirstSearch' start g = dfs [start] []
+	where
+		dfs [] vis = vis
+		dfs (x:xs) vis
+			| elem x vis = dfs xs vis
+			| otherwise = dfs ((adjacent g x) ++ xs) (vis ++ [x])
 
 main =
 	do 
