@@ -2,6 +2,7 @@
 
 CC = gcc
 CPP = g++
+# SRC = sample.cpp
 
 CFLAGS = -lm `pkg-config --cflags --libs opencv`
 
