@@ -92,9 +92,9 @@ int main(int argc, char** argv)
     {
         Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
         int radius = cvRound(circles[i][2]);
-        tempImg[0] = src(Rect( center.x-radius, center.y-radius, radius*2, radius*2 ));
+        tempImg[0] = src(Rect( std::max(center.x-radius,0), std::max(center.y-radius,0), radius*2, radius*2 ));
         tempImg[0].copyTo(tempImg[1]);
-        tempImg[2] = src(Rect( center.x-radius*0.7, center.y-radius*0.7, radius*1.4, radius*1.4 ));
+        tempImg[2] = src(Rect( std::max(center.x-radius*0.7,0.0), std::max(center.y-radius*0.7,0.0), radius*1.4, radius*1.4 ));
         circle( tempImg[1], Point(radius,radius), radius*0.7, Scalar(0,0,0), -1, 8, 0 );        
 
         for (int j = 0; j < 3; j++)
