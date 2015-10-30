@@ -1,6 +1,7 @@
 module Queue (Queue, enqueue, dequeue, front, empty, isEmpty) where
 
-	data Queue a = Q [a]
+	newtype Queue a = Q [a] deriving (Show, Eq)
+	data Queue' a = Q' [a] deriving (Show, Eq)
 
 	enqueue :: a -> Queue a -> Queue a
 	enqueue x (Q xs) = Q (xs ++ [x])
